@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  ForbiddenException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtPayload } from '../auth/jwt-payload.type';
 
@@ -14,38 +10,20 @@ export class ReservationsService {
     return this.prisma.reservation.findMany({
       include: {
         client: {
-          select: {
-            fullName: true,
-            email: true,
-          },
+          select: { fullName: true, email: true },
         },
         provider: {
-          select: {
-            fullName: true,
-            email: true,
-          },
+          select: { fullName: true, email: true },
         },
         service: {
-          select: {
-            name: true,
-            price: true,
-          },
-        },
-        tableType: {
-          select: {
-            name: true,
-            price: true,
-            capacity: true,
-          },
+          select: { name: true, price: true },
         },
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
-  async create(serviceId: string, tableTypeId: string, user: JwtPayload) {
+  async create(serviceId: string, details: Record<string, any>, user: JwtPayload) {
     if (user.role !== 'CLIENT') {
       throw new ForbiddenException();
     }
@@ -55,12 +33,8 @@ export class ReservationsService {
       include: { provider: true },
     });
 
-    const table = await this.prisma.tableType.findUnique({
-      where: { id: tableTypeId },
-    });
-
-    if (!service || !table) {
-      throw new NotFoundException();
+    if (!service) {
+      throw new NotFoundException('Serviço não encontrado');
     }
 
     return this.prisma.reservation.create({
@@ -68,11 +42,6 @@ export class ReservationsService {
         clientId: user.id,
         providerId: service.provider.id,
         serviceId: service.id,
-        tableType: {
-          connect: {
-            id: table.id,
-          },
-        },
       },
     });
   }
