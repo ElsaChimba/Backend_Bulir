@@ -13,8 +13,9 @@ export class ReservationsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get()
-  findAll() {
-    return this.reservationsService.findAll();
-  }
+@Get('me')
+findMine(@Request() req) {
+  return this.reservationsService.findByClient(req.user);
+}
+
 }

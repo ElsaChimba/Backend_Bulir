@@ -23,9 +23,26 @@ export class ReservationsService {
     });
   }
 
+  async findByClient(user: JwtPayload) {
+    return this.prisma.reservation.findMany({
+      where: { clientId: user.id },
+      include: {
+        service: {
+          select: {
+            name: true,
+            price: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
   async create(serviceId: string, details: Record<string, any>, user: JwtPayload) {
     if (user.role !== 'CLIENT') {
-      throw new ForbiddenException();
+      throw new ForbiddenException('Apenas clientes podem fazer reservas.');
     }
 
     const service = await this.prisma.service.findUnique({
@@ -42,6 +59,7 @@ export class ReservationsService {
         clientId: user.id,
         providerId: service.provider.id,
         serviceId: service.id,
+        details, 
       },
     });
   }

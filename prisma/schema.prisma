@@ -40,6 +40,8 @@ model Reservation {
   serviceId   String
   details     Json?
   createdAt   DateTime   @default(now())
+  
+
 
   client      User       @relation("ClientReservations", fields: [clientId], references: [id])
   provider    User       @relation("ProviderReservations", fields: [providerId], references: [id])
